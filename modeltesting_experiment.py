@@ -24,9 +24,9 @@ import code.util as util
 def run_raxml_ng(df, experiment):
     for (i, row) in df.iterrows():
         if experiment == "raxmlng_gamma":
-            raxmlng.run_inference(row["bin_msa_path"], "BIN+G", util.prefix(results_dir, row, experiment, "bin"))
+            raxmlng.run_inference(row["msa_paths"]["bin"], "BIN+G", util.prefix(results_dir, row, experiment, "bin"))
         if experiment == "raxmlng_nogamma":
-            raxmlng.run_inference(row["bin_msa_path"], "BIN", util.prefix(results_dir, row, experiment, "bin"))
+            raxmlng.run_inference(row["msa_paths"]["bin"], "BIN", util.prefix(results_dir, row, experiment, "bin"))
 
 
 def run_pythia(df):
@@ -34,7 +34,7 @@ def run_pythia(df):
         d = "/".join(util.prefix(results_dir, row, "pythia", "bin").split("/")[:-1])
         if not os.path.isdir(d):
             os.makedirs(d)
-        pythia.run_with_padding(row["bin_msa_path"], util.prefix(results_dir, row, "pythia", "bin"))
+        pythia.run_with_padding(row["msa_paths"]["bin"], util.prefix(results_dir, row, "pythia", "bin"))
 
 def run_mptp(df):
     for (i, row) in df.iterrows():
@@ -119,20 +119,20 @@ def write_results_df(df):
     print_df.to_csv(os.path.join(results_dir, "raxml_pythia_results.csv"), sep = ";")
 
 raxmlng.exe_path = "./bin/raxml-ng"
-raxmlng.exe_path = "./bin/mptp"
+mptp.exe_path = "./bin/mptp"
 pythia.raxmlng_path = "./bin/raxml-ng"
 pythia.predictor_path = "predictors/latest.pckl"
 config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familyfull_config.json"}
 
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
-    database.update_native()
-    database.generate_data()
+   # database.update_native()
+   # database.generate_data()
     df = database.data()
     results_dir = os.path.join("data/results", setup)
 
-    #run_raxml_ng(df, "raxmlng_gamma")
-    #run_raxml_ng(df, "raxmlng_nogamma")
-    #run_pythia(df)
-    #run_mptp(df)
+    run_raxml_ng(df, "raxmlng_gamma")
+    run_raxml_ng(df, "raxmlng_nogamma")
+    run_pythia(df)
+    run_mptp(df)
     write_results_df(df)

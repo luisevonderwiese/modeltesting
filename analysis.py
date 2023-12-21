@@ -7,7 +7,7 @@ import re
 from collections import Counter
 from tabulate import tabulate
 
-from lingdata.data_interface import DataInterface
+from lingdata.categorical import CategoricalData
 from lingdata import database
 
 
@@ -197,13 +197,11 @@ columns = [
                 "difficulty",
                 "AIC_gamma",
                 "swadesh_ratio",
-                "informative_char_ratio",
-                "quasi_binary_char_ratio",
                 "sites_per_char",
-                "mean_substitution_frequency",
-                "mean_norm_rf_distance",
-                "mean_parsimony_support",
-                "mean_parsimony_bootstrap_support",
+               # "mean_substitution_frequency",
+               # "mean_norm_rf_distance",
+               # "mean_parsimony_support",
+               # "mean_parsimony_bootstrap_support",
                 "avg_brlen_gamma",
                 "avg_brlen_nogamma",
                 "num_species_gamma",

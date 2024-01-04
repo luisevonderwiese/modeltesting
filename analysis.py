@@ -6,6 +6,7 @@ import math
 import re
 from collections import Counter
 from tabulate import tabulate
+from scipy import stats
 
 from lingdata.categorical import CategoricalData
 from lingdata import database
@@ -147,8 +148,17 @@ def familyfull_analysis(df):
 
 
 def alpha_correlation(columns, familyfull_df, familysplit_df):
-    r = [[column, familyfull_df[column].corr(familyfull_df["alpha"]), familysplit_df[column].corr(familysplit_df["alpha"])] for column in columns]
-    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "alpha corr full", "alpha corr split"]))
+    r = []
+    for column in columns:
+        part_r = [column]
+        for df in [familyfull_df, familysplit_df]:
+            mini_df = df[["alpha", column]]
+            mini_df = mini_df.dropna()
+            pearson = stats.pearsonr(mini_df['alpha'], mini_df[column])
+            part_r.append(pearson[0])
+            part_r.append(pearson[1])
+        r.append(part_r)
+    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "pearson full", "p-value full", "pearson split", "p-value split"]))
 
 
 
@@ -169,7 +179,7 @@ with open("word_lists/swadesh207.txt") as s207_file:
 
 
 
-config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familyfull_config.json"}
+config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familysplit_config.json"}
 
 dfs = {}
 for (setup, config_path) in config_paths.items():

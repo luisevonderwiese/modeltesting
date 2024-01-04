@@ -121,7 +121,7 @@ def write_results_df(df):
     df["num_species_nogamma"] = get_num_species(df, "mptp_nogamma")
     df["avg_brlen_gamma"] = average_brlens(df, "raxmlng_gamma")
     df["avg_brlen_nogamma"] = average_brlens(df, "raxmlng_nogamma")
-    print_df = df[["ds_id", "source", "ling_type", "family", "difficulty", "alpha", "zero_base_frequency_gamma", "zero_base_frequency_nogamma"
+    print_df = df[["ds_id", "source", "ling_type", "family", "difficulty", "alpha", "zero_base_frequency_gamma", "zero_base_frequency_nogamma",
                     "AIC_gamma", "AIC_nogamma", "AICc_gamma", "AICc_nogamma", "BIC_gamma", "BIC_nogamma",
                     "rlh_AIC", "rlh_AICc", "rlh_BIC", "avg_ml_tree_dist", "num_species_gamma", "num_species_nogamma", "avg_brlen_gamma", "avg_brlen_nogamma"]]
     print_df.to_csv(os.path.join(results_dir, "raxml_pythia_results.csv"), sep = ";")
@@ -139,8 +139,8 @@ for (setup, config_path) in config_paths.items():
     df = database.data()
     results_dir = os.path.join("data/results", setup)
 
-    run_raxml_ng(df, "raxmlng_gamma")
-    run_raxml_ng(df, "raxmlng_nogamma")
-    run_pythia(df)
-    run_mptp(df)
+   # run_raxml_ng(df, "raxmlng_gamma")
+   # run_raxml_ng(df, "raxmlng_nogamma")
+   # run_pythia(df)
+   # run_mptp(df)
     write_results_df(df)

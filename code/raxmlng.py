@@ -45,6 +45,14 @@ def alpha(prefix):
             return float(line.split(",  ")[1].split(" ")[1])
     return float('nan')
 
+def final_llh(prefix):
+    with open(prefix + ".raxml.log", "r") as logfile:
+        lines = logfile.readlines()
+    for line in lines:
+        if line.startswith("Final LogLikelihood: "):
+            return float(line.split(": ")[1])
+    return float('nan')
+
 def aic(prefix):
     logpath = prefix + ".raxml.log"
     if not os.path.isfile(logpath):

@@ -50,6 +50,12 @@ def get_alphas(df, experiment):
         alphas.append(raxmlng.alpha(util.prefix(results_dir, row, experiment, "bin")))
     return alphas
 
+def get_final_llhs(df, experiment):
+    llhs = []
+    for (i, row) in df.iterrows():
+        llhs.append(raxmlng.final_llh(util.prefix(results_dir, row, experiment, "bin")))
+    return llhs
+
 def get_difficulties(df):
     difficulties = []
     for (i, row) in df.iterrows():
@@ -66,7 +72,11 @@ def get_aics(df, experiment):
 def get_zero_base_frequencies(df, experiment):
     frequencies = []
     for (i, row) in df.iterrows():
-        frequencies.append(raxmlng.base_frequencies(util.prefix(results_dir, row, experiment, "bin"))[0])
+        base_frequencies = raxmlng.base_frequencies(util.prefix(results_dir, row, experiment, "bin"))
+        if len(base_frequencies) < 2:
+            frequencies.append(float('nan'))
+        else:
+            frequencies.append(base_frequencies[0])
     return frequencies
 
 def average_branch_length(tree_name):
@@ -104,6 +114,8 @@ def write_results_df(df):
     df["alpha"] = get_alphas(df, "raxmlng_gamma")
     df["zero_base_frequency_gamma"] = get_zero_base_frequencies(df, "raxmlng_gamma")
     df["zero_base_frequency_nogamma"] = get_zero_base_frequencies(df, "raxmlng_nogamma")
+    df["final_llh_gamma"] = get_final_llhs(df, "raxmlng_gamma")
+    df["final_llh_nogamma"] = get_final_llhs(df, "raxmlng_nogamma")
     scores_gamma = get_aics(df, "raxmlng_gamma")
     scores_nogamma = get_aics(df, "raxmlng_nogamma")
     df["AIC_gamma"] = [scores[0] for scores in scores_gamma]
@@ -122,7 +134,7 @@ def write_results_df(df):
     df["avg_brlen_gamma"] = average_brlens(df, "raxmlng_gamma")
     df["avg_brlen_nogamma"] = average_brlens(df, "raxmlng_nogamma")
     print_df = df[["ds_id", "source", "ling_type", "family", "difficulty", "alpha", "zero_base_frequency_gamma", "zero_base_frequency_nogamma",
-                    "AIC_gamma", "AIC_nogamma", "AICc_gamma", "AICc_nogamma", "BIC_gamma", "BIC_nogamma",
+        "final_llh_gamma", "final_llh_nogamma", "AIC_gamma", "AIC_nogamma", "AICc_gamma", "AICc_nogamma", "BIC_gamma", "BIC_nogamma",
                     "rlh_AIC", "rlh_AICc", "rlh_BIC", "avg_ml_tree_dist", "num_species_gamma", "num_species_nogamma", "avg_brlen_gamma", "avg_brlen_nogamma"]]
     print_df.to_csv(os.path.join(results_dir, "raxml_pythia_results.csv"), sep = ";")
 
@@ -130,7 +142,7 @@ raxmlng.exe_path = "./bin/raxml-ng"
 mptp.exe_path = "./bin/mptp"
 pythia.raxmlng_path = "./bin/raxml-ng"
 pythia.predictor_path = "predictors/latest.pckl"
-config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familyfull_config.json"}
+config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familysplit_config.json"}
 
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
@@ -139,8 +151,8 @@ for (setup, config_path) in config_paths.items():
     df = database.data()
     results_dir = os.path.join("data/results", setup)
 
-   # run_raxml_ng(df, "raxmlng_gamma")
-   # run_raxml_ng(df, "raxmlng_nogamma")
-   # run_pythia(df)
-   # run_mptp(df)
+    #run_raxml_ng(df, "raxmlng_gamma")
+    #run_raxml_ng(df, "raxmlng_nogamma")
+    #run_pythia(df)
+    #run_mptp(df)
     write_results_df(df)

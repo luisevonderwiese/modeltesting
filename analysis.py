@@ -33,7 +33,9 @@ def get_bins(arr, nbins):
 
 def AIC_analysis(df):
     gamma = 0
+    gamma_low_alpha = 0
     no_gamma = 0
+    no_gamma_low_alpha = 0
     gamma_rlhs = []
     nogamma_rlhs = []
     for i, row in df.iterrows():
@@ -42,12 +44,18 @@ def AIC_analysis(df):
         if row["AIC_gamma"] <= row["AIC_nogamma"]:
             gamma_rlhs.append(math.exp((row["AIC_gamma"]  - row["AIC_nogamma"])/2))
             gamma += 1
+            if row["alpha"] < 40:
+                gamma_low_alpha += 1
         else:
             nogamma_rlhs.append(math.exp((row["AIC_nogamma"]  - row["AIC_gamma"])/2))
             no_gamma += 1
+            if row["alpha"] < 40:
+                no_gamma_low_alpha += 1
     print("Number of datasets for which BIN has the lower AIC score: " + str(no_gamma))
+    print("With high rate heterogeneity: " + str(no_gamma_low_alpha))
     print("Average relative likelihood: " + str(sum(nogamma_rlhs) / len(nogamma_rlhs)))
     print("Number of datasets for which BIN+G has the lower AIC score: " + str(gamma))
+    print("With high rate heterogeneity: " + str(gamma_low_alpha))
     print("Average relative likelihood: " + str(sum(gamma_rlhs) / len(gamma_rlhs)))
 
 
@@ -160,6 +168,23 @@ def alpha_correlation(columns, familyfull_df, familysplit_df):
         r.append(part_r)
     print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "pearson full", "p-value full", "pearson split", "p-value split"]))
 
+def heterogeneity_analysis(columns, familyfull_df, familysplit_df):
+    full_het = (familyfull_df[familyfull_df["alpha"] < 40], familyfull_df[familyfull_df["alpha"] >= 40])
+    split_het = (familysplit_df[familysplit_df["alpha"] < 40], familysplit_df[familysplit_df["alpha"] >= 40])
+    r = []
+    for column in columns:
+        part_r = [column]
+        for het in (full_het, split_het):
+            part_r.append(het[0][column].mean())
+            part_r.append(het[1][column].mean())
+        r.append(part_r)
+    print("means")
+    part_r.append(het[0][column].mean())
+    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "full high het.", "full low het.", "split high het.", "split low het."]))
+
+
+
+
 
 
 def add_results(df):
@@ -201,27 +226,31 @@ familysplit_analysis(dfs["familysplit"])
 
 columns = [
                 "num_taxa",
-                "num_chars",
-                "multistate_ratio",
-                "max_values",
-                "difficulty",
-                "AIC_gamma",
-                "swadesh_ratio",
+               # "num_chars",
+               # "multistate_ratio",
+               # "max_values",
+               # "difficulty",
+               # "AIC_gamma",
+               # "AIC_nogamma",
+                 "final_llh_gamma",
+                 "final_llh_nogamma",
+               # "swadesh_ratio",
                 "sites_per_char",
                # "mean_substitution_frequency",
                # "mean_norm_rf_distance",
                # "mean_parsimony_support",
                # "mean_parsimony_bootstrap_support",
-                "avg_brlen_gamma",
-                "avg_brlen_nogamma",
-                "num_species_gamma",
-                "num_species_nogamma",
-                "num_species_ratio_gamma",
-                "num_species_ratio_nogamma",
+               # "avg_brlen_gamma",
+               # "avg_brlen_nogamma",
+               # "num_species_gamma",
+               # "num_species_nogamma",
+               # "num_species_ratio_gamma",
+               # "num_species_ratio_nogamma",
                 "zero_base_frequency_gamma",
                 "zero_base_frequency_nogamma"
                 ]
 alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
+heterogeneity_analysis(columns, dfs["familyfull"], dfs["familysplit"])
 print("full:")
 AIC_analysis(dfs["familyfull"])
 print("split:")

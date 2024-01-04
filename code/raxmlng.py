@@ -60,6 +60,16 @@ def aic(prefix):
             return scores
     return [float('nan'), float('nan'), float('nan')]
 
+
+def base_frequencies(prefix):
+    with open(prefix + ".raxml.log", "r") as logfile:
+        lines = logfile.readlines()
+    for line in lines:
+        if line.startswith("   Base frequencies"):
+            parts = line.split(": ")[1].split(" ")[:-1]
+            return [float(part) for part in parts]
+    return []
+
 def consense_tree(prefixes, prefix, args = ""):
     if not os.path.isfile(consensus_tree_path(prefix)):
         args = args + " --redo"

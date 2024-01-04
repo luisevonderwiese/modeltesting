@@ -208,6 +208,8 @@ columns = [
                 "num_species_nogamma",
                 "num_species_ratio_gamma",
                 "num_species_ratio_nogamma",
+                "zero_base_frequency_gamma",
+                "zero_base_frequency_nogamma"
                 ]
 alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
 print("full:")

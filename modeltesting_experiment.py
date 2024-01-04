@@ -63,6 +63,12 @@ def get_aics(df, experiment):
         scores.append(raxmlng.aic(util.prefix(results_dir, row, experiment, "bin")))
     return scores
 
+def get_zero_base_frequencies(df, experiment):
+    frequencies = []
+    for (i, row) in df.iterrows():
+        frequencies.append(raxmlng.base_frequencies(util.prefix(results_dir, row, experiment, "bin"))[0])
+    return frequencies
+
 def average_branch_length(tree_name):
     if not os.path.isfile(tree_name):
        return float("nan")
@@ -96,6 +102,8 @@ def calculate_relative_likelihoods(df):
 def write_results_df(df):
     df["difficulty"] = get_difficulties(df)
     df["alpha"] = get_alphas(df, "raxmlng_gamma")
+    df["zero_base_frequency_gamma"] = get_zero_base_frequencies(df, "raxmlng_gamma")
+    df["zero_base_frequency_nogamma"] = get_zero_base_frequencies(df, "raxmlng_nogamma")
     scores_gamma = get_aics(df, "raxmlng_gamma")
     scores_nogamma = get_aics(df, "raxmlng_nogamma")
     df["AIC_gamma"] = [scores[0] for scores in scores_gamma]
@@ -113,7 +121,7 @@ def write_results_df(df):
     df["num_species_nogamma"] = get_num_species(df, "mptp_nogamma")
     df["avg_brlen_gamma"] = average_brlens(df, "raxmlng_gamma")
     df["avg_brlen_nogamma"] = average_brlens(df, "raxmlng_nogamma")
-    print_df = df[["ds_id", "source", "ling_type", "family", "difficulty", "alpha",
+    print_df = df[["ds_id", "source", "ling_type", "family", "difficulty", "alpha", "zero_base_frequency_gamma", "zero_base_frequency_nogamma"
                     "AIC_gamma", "AIC_nogamma", "AICc_gamma", "AICc_nogamma", "BIC_gamma", "BIC_nogamma",
                     "rlh_AIC", "rlh_AICc", "rlh_BIC", "avg_ml_tree_dist", "num_species_gamma", "num_species_nogamma", "avg_brlen_gamma", "avg_brlen_nogamma"]]
     print_df.to_csv(os.path.join(results_dir, "raxml_pythia_results.csv"), sep = ";")

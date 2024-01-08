@@ -51,6 +51,7 @@ def final_llh(prefix):
     for line in lines:
         if line.startswith("Final LogLikelihood: "):
             return float(line.split(": ")[1])
+    print(prefix)
     return float('nan')
 
 def aic(prefix):
@@ -111,7 +112,7 @@ def run_inference(msa_path, model, prefix, args = ""):
     command += " --msa " + msa_path
     command += " --model " + model
     command += " --prefix " + prefix
-    command += " --threads auto --seed 2"
+    command += " --threads auto --seed 2 --force model_lh_impr"
     command += " " + args
     os.system(command)
 

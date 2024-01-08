@@ -17,6 +17,17 @@ import code.util as util
 
 
 
+def filter_data(df):
+    for (i, row) in df.iterrows():
+        categorical_path = row["categorical_path"]
+        cd = CategoricalData.from_file(categorical_path)
+        num_possible_values = [len(cd.get_possible_values(char_idx)) for char_idx in range(cd.num_chars())]
+        char_ids_filtered = [char_id for (char_idx, char_id) in enumerate(cd.char_ids) if num_possible_values[char_idx] <= 2]
+        matrix_filtered = [matrix_col for (char_idx, matrix_col) in enumerate(cd.matrix) if num_possible_values[char_idx] <= 2]
+        cd.char_ids = char_ids_filtered
+        cd.matrix = matrix_filtered
+        cd.write(categorical_path)
+        data.write_msa(row["msa_paths"]["bin"], "bin")
 
 
 
@@ -142,17 +153,24 @@ raxmlng.exe_path = "./bin/raxml-ng"
 mptp.exe_path = "./bin/mptp"
 pythia.raxmlng_path = "./bin/raxml-ng"
 pythia.predictor_path = "predictors/latest.pckl"
-config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familysplit_config.json"}
+config_paths = {
+                #"familyfull": "lingdata_modeltesting_familyfull_config.json",
+                #"familysplit": "lingdata_modeltesting_familysplit_config.json",
+                "familyfull_filtered": "lingdata_modeltesting_familyfull_filtered_config.json",
+                "familysplit_filtered": "lingdata_modeltesting_familysplit_filtered_config.json"
+                }
 
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
    # database.update_native()
    # database.generate_data()
     df = database.data()
+    if setup.endswith("filtered"):
+        filter_data(df)
     results_dir = os.path.join("data/results", setup)
 
-    #run_raxml_ng(df, "raxmlng_gamma")
-    #run_raxml_ng(df, "raxmlng_nogamma")
-    #run_pythia(df)
-    #run_mptp(df)
+    run_raxml_ng(df, "raxmlng_gamma")
+    run_raxml_ng(df, "raxmlng_nogamma")
+    run_pythia(df)
+    run_mptp(df)
     write_results_df(df)

@@ -12,7 +12,10 @@ def ml_trees_path(prefix):
     return prefix + ".raxml.mlTrees"
 
 def avg_ml_tree_dist(prefix):
-    trees = [Tree(l) for l in open(ml_trees_path(prefix), "r").readlines()]
+    path = ml_trees_path(prefix)
+    if not os.path.isfile(path):
+        return float('nan')
+    trees = [Tree(l) for l in open(path, "r").readlines()]
     dists = []
     for (i, tree1) in enumerate(trees):
         for j in range(i+1, len(trees)):
@@ -51,7 +54,6 @@ def final_llh(prefix):
     for line in lines:
         if line.startswith("Final LogLikelihood: "):
             return float(line.split(": ")[1])
-    print(prefix)
     return float('nan')
 
 def aic(prefix):

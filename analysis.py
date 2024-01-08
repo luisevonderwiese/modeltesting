@@ -183,6 +183,17 @@ def heterogeneity_analysis(columns, familyfull_df, familysplit_df):
     print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "full high het.", "full low het.", "split high het.", "split low het."]))
 
 
+def filtering_analysis(normal_df, filtered_df):
+    counts = [[0, 0, 0, 0]]
+    combined_df = pd.merge(normal_df, filtered_df, how = 'right', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
+    combined_df.dropna(subset=["alpha_y"], inplace=True)
+    counts[0][0] = len(combined_df[(combined_df["alpha_x"] < 40) & (combined_df["alpha_y"] < 40)])
+    counts[0][1] = len(combined_df[(combined_df["alpha_x"] < 40) & (combined_df["alpha_y"] >= 40)])
+    counts[0][2] = len(combined_df[(combined_df["alpha_x"] >= 40) & (combined_df["alpha_y"] < 40)])
+    counts[0][3] = len(combined_df[(combined_df["alpha_x"] >= 40) & (combined_df["alpha_y"] >= 40)])
+    headers = ["high, filtered high", "high, filtered low", "low, filtered high", "low, filtered low"]
+    print("heterogeneity of datasets")
+    print(tabulate(counts, tablefmt="pipe", floatfmt=".3f", headers = headers))
 
 
 
@@ -204,7 +215,12 @@ with open("word_lists/swadesh207.txt") as s207_file:
 
 
 
-config_paths = {"familyfull": "lingdata_modeltesting_familyfull_config.json", "familysplit": "lingdata_modeltesting_familysplit_config.json"}
+config_paths = {
+                "familyfull": "lingdata_modeltesting_familyfull_config.json",
+                "familysplit": "lingdata_modeltesting_familysplit_config.json",
+                "familyfull_filtered": "lingdata_modeltesting_familyfull_filtered_config.json",
+                "familysplit_filtered": "lingdata_modeltesting_familysplit_filtered_config.json"
+        }
 
 dfs = {}
 for (setup, config_path) in config_paths.items():
@@ -255,3 +271,7 @@ print("full:")
 AIC_analysis(dfs["familyfull"])
 print("split:")
 AIC_analysis(dfs["familysplit"])
+
+filtering_analysis(dfs["familyfull"], dfs["familyfull_filtered"])
+filtering_analysis(dfs["familysplit"], dfs["familysplit_filtered"])
+

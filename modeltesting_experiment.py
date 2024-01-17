@@ -162,18 +162,17 @@ config_paths = {
                 "familyfull_filtered": "lingdata_modeltesting_familyfull_filtered_config.json",
                 "familysplit_filtered": "lingdata_modeltesting_familysplit_filtered_config.json"
                 }
-
+#database.download()
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
-   # database.update_native()
-   # database.generate_data()
+    database.compile()
     df = database.data()
     if setup.endswith("filtered"):
         df = filter_data(df)
     results_dir = os.path.join("data/results", setup)
 
-    #run_raxml_ng(df, "raxmlng_gamma")
-    #run_raxml_ng(df, "raxmlng_nogamma")
-    #run_pythia(df)
-    #run_mptp(df)
+    run_raxml_ng(df, "raxmlng_gamma")
+    run_raxml_ng(df, "raxmlng_nogamma")
+    run_pythia(df)
+    run_mptp(df)
     write_results_df(df)

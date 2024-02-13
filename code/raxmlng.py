@@ -11,6 +11,20 @@ def best_tree_path(prefix):
 def ml_trees_path(prefix):
     return prefix + ".raxml.mlTrees"
 
+def siterate_lhs_path(prefix):
+    return prefix + ".raxml.siterateLH"
+
+def siterate_lhs(prefix):
+    path = siterate_lhs_path(prefix)
+    if not os.path.isfile(path):
+        return []
+    with open(path, "r") as f:
+        lines = f.readlines()
+    siteratelhs = []
+    for line in lines:
+        siteratelhs.append([float(el) for el in line.split(" ")[:-1]])
+    return siteratelhs
+
 def avg_ml_tree_dist(prefix):
     path = ml_trees_path(prefix)
     if not os.path.isfile(path):
@@ -158,5 +172,48 @@ def run_support(inference_prefix, bootstrap_prefix, prefix, args = ""):
     command += " --bs-trees " + bootstrap_trees_path(bootstrap_prefix)
     command += " --prefix " + prefix
     command += " --threads 2 "
+    command += " " + args
+    os.system(command)
+
+
+def run_bootstrap(msa_path, model, prefix, args = ""):
+    if exe_path == "":
+        print("Please specify raxmlng.exe_path")
+        return
+    if not os.path.isfile(msa_path):
+        print("MSA " + msa_path + " does not exist")
+        return
+    prefix_dir = "/".join(prefix.split("/")[:-1])
+    if not os.path.isdir(prefix_dir):
+        os.makedirs(prefix_dir)
+    if not os.path.isfile(bootstrap_trees_path(prefix)):
+        args = args + " --redo"
+    command = exe_path
+    command += " --bootstrap"
+    command += " --msa " + msa_path
+    command += " --model " + model
+    command += " --prefix " + prefix
+    command += " --threads auto --seed 2"
+    command += " " + args
+    os.system(command)
+
+
+def run_inference_adaptive(msa_path, model, prefix, args = ""):
+    if adaptive_exe_path == "":
+        print("Please specify raxmlng.exe_path")
+        return
+    if not os.path.isfile(msa_path):
+        print("MSA " + msa_path + " does not exist")
+        return
+    prefix_dir = "/".join(prefix.split("/")[:-1])
+    if not os.path.isdir(prefix_dir):
+        os.makedirs(prefix_dir)
+    if not os.path.isfile(best_tree_path(prefix)):
+        args = args + " --redo"
+    command = exe_path
+    command += " --msa " + msa_path
+    command += " --model " + model
+    command += " --prefix " + prefix
+    command += " --search --thread 1 --simd none --site-repeats off --pat-comp off"
     command += " " + args
     os.system(command)

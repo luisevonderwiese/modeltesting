@@ -68,7 +68,7 @@ def weights_rates(prefix):
     for line in lines:
         if line.startswith("   Rate heterogeneity:"):
             string = line.split(",  ")[2].split(": ")[1]
-            parts = string.split(" ")
+            parts = string.split(" ")[:4]
             res = []
             for part in parts:
                 part = part.strip("()")

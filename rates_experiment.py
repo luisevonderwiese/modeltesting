@@ -31,18 +31,30 @@ def evaluate(df):
         #if alpha >= 20: #low heterogeneity
         #    continue
         srlhs = raxmlng.siterate_lhs(prefix)
+        rates_weights = raxmlng.rates_weights(prefix)
+        print(rates_weights)
+        hack = [(i, item) for i, item in enumerate(rate_weights)]
+        hack.sort(key = lambda x: x[1][1])
+        permutation = np.argsort([i for i, item in hack])
+        print(permutation)
         if len(srlhs) == 0:
             continue
         print(row["ds_id"])
         print("alpha: " + str(alpha))
         best_rates = []
         for rlhs in srlhs:
-            best_rates.append(rlhs.index(max(rlhs)))
+            best_llh = max(rlhs)
+            best_indices = []
+            for r_i in range(4):
+                if rlhs[r_i] == best_llh:
+                    best_indices.append(permutation[r_i])
+            best_rates.append(best_indices)
         buckets = [[] for _ in range(4)]
         site_group_sizes = row["site_group_sizes"]
         assert(len(site_group_sizes))
         for i, group_size in enumerate(site_group_sizes):
-            buckets[best_rates[i]].append(group_size)
+            for p_r_i in best_rates[i]:
+                buckets[p_r_i].append(group_size)
         for i, bucket in enumerate(buckets):
             if len(bucket) == 0:
                 a = 0

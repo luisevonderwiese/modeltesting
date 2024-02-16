@@ -62,6 +62,20 @@ def alpha(prefix):
             return float(line.split(",  ")[1].split(" ")[1])
     return float('nan')
 
+def weights_rates(prefix):
+    with open(prefix + ".raxml.log", "r") as logfile:
+        lines = logfile.readlines()
+    for line in lines:
+        if line.startswith("   Rate heterogeneity:"):
+            string = line.split(",  ")[2].split(": ")[1]
+            parts = string.split(" ")
+            res = []
+            for part in parts:
+                part = part.strip("()")
+                res.append([float(inner_part) for inner_part in part.split(",")])
+            return res
+    return []
+
 def final_llh(prefix):
     with open(prefix + ".raxml.log", "r") as logfile:
         lines = logfile.readlines()

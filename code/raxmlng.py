@@ -210,7 +210,7 @@ def run_inference_adaptive(msa_path, model, prefix, args = ""):
         os.makedirs(prefix_dir)
     if not os.path.isfile(best_tree_path(prefix)):
         args = args + " --redo"
-    command = exe_path
+    command = adaptive_exe_path
     command += " --msa " + msa_path
     command += " --model " + model
     command += " --prefix " + prefix

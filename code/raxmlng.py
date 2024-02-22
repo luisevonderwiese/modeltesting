@@ -100,6 +100,21 @@ def aic(prefix):
     return [float('nan'), float('nan'), float('nan')]
 
 
+def get_partitioning_alphas(prefix):
+    file_name = prefix + ".raxml.bestModel"
+    if not os.path.isfile(file_name):
+        return {}
+    with open(file_name, "r") as logfile:
+        lines = logfile.readlines()
+    alphas = {}
+    for line in lines:
+        idx = int(line.split(" ")[1].split("p")[1])
+        alpha = float(line.split("{")[2].split("}")[0])
+        alphas[idx] = alpha
+    return alphas
+
+
+
 def base_frequencies(prefix):
     with open(prefix + ".raxml.log", "r") as logfile:
         lines = logfile.readlines()

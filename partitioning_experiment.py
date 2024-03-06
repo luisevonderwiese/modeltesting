@@ -25,45 +25,29 @@ def analyze_alphas(df):
     for (i, row) in df.iterrows():
         all_alphas.append(raxmlng.get_partitioning_alphas(util.prefix(results_dir, row, "partitioning", "bin_BIN+G_x")))
     max_part = max([max(alphas.keys()) for alphas in all_alphas if alphas != {}])
-    alphas_matrix = []
-    labels = ["[0,20]", "[20,90]", "[90, 100]"]
-    for idx in range(max_part):
-        idx_alphas = [0, 0, 0]
+    alphas_matrix = [[] for _ in range(max_part)]
+    for idx in range(26): #cutoff because there are only few large site groups in the data
         for alphas in all_alphas:
             if idx in alphas:
-                alpha = alphas[idx]
-                if alpha < 20:
-                    idx_alphas[0] += 1
-                elif alpha < 90:
-                    idx_alphas[1] += 1
-                else:
-                    idx_alphas[2]+= 1
-        alphas_matrix.append(idx_alphas)
-    fig,ax = plt.subplots(figsize=(15, 10))
-    x = range(len(alphas_matrix))
-    y_old = [0 for el in x]
-    for num in range(3):
-        y_new = []
-        for idx_alphas in alphas_matrix:
-            y_new.append(idx_alphas[num])
-        ax.bar(x, y_new, bottom=y_old, label = labels[num])
-        for i in x:
-            y_old[i] = y_old[i] + y_new[i]
-    ax.legend()
+                alphas_matrix[idx].append(alphas[idx])
+    nans = [float('nan'), float('nan')] # requires at least 2 nans
+    fig,ax = plt.subplots(figsize=(30, 10))
+    ax.violinplot([alphas or nans for alphas in alphas_matrix])
     plt.xlabel("Site Group Size")
-    plt.ylabel("Number of Datasets")
-    plt.savefig(os.path.join(plots_dir, "stacked_alpha_ranges.png"))
+    plt.ylabel("Alpha")
+    plt.savefig(os.path.join(plots_dir, "familysplit_alpha_violinplot.png"))
     plt.clf()
 
+
 raxmlng.exe_path = "./bin/raxml-ng"
-config_path = "lingdata_modeltesting_familyfull_partitioning.json"
+config_path = "lingdata_modeltesting_familysplit_partitioning.json"
 database.read_config(config_path)
-#database.compile()
+database.compile()
 df = database.data()
-results_dir = os.path.join("data/results/partitioning")
+results_dir = os.path.join("data/results/familysplit_partitioning")
 plots_dir = os.path.join("data/results/partitioning_plots")
 if not os.path.isdir(plots_dir):
     os.makedirs(plots_dir)
 
-#run_raxml_ng(df)
+run_raxml_ng(df)
 analyze_alphas(df)

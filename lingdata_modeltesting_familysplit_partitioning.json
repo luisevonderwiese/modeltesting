@@ -1,0 +1,13 @@
+{"max_num_taxa": 100,
+"max_num_chars" : 700,
+"family_split_threshold": 0,
+"num_samples": 0,
+"data_dir" : "data/lingdata/familyfull_partititioning",
+"native_dir" : "data/lingdata",
+"sources" : ["lexibank", "SequenceComparison"],
+"ling_types" : ["cognate"],
+"msa_types" : ["bin"],
+"partition_types" : [["bin", "BIN", 1, "x"]],
+"glottolog_tree_required" : 0,
+"flat_paths" : 1,
+"download_cutoff": "2023-12-05T00:00:00+00:00"}

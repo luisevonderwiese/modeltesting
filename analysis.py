@@ -201,8 +201,11 @@ def filtering_analysis(normal_df, filtered_df):
 def add_results(df):
     results_df = pd.read_csv(os.path.join(results_dir, "raxml_pythia_results.csv"), sep = ";")
     df = pd.merge(df, results_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
-    #ebg_df = pd.read_csv(os.path.join(results_dir, "EBG_features.csv"), sep = ";")
-    #df = pd.merge(df, ebg_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
+    return df 
+
+def add_ebg(df):
+    ebg_df = pd.read_csv(os.path.join(results_dir, "EBG_features.csv"), sep = ";")
+    df = pd.merge(df, ebg_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
     return df
 
 
@@ -230,6 +233,8 @@ for (setup, config_path) in config_paths.items():
     plots_dir = os.path.join(results_dir, "plots")
 
     df = add_results(df)
+    if not setup.endswith("_filtered"):
+        df = add_ebg(df)
     df["swadesh_ratio"] = [get_swadesh_ratio(row["categorical_path"], swadesh100, swadesh207) for i, row in df.iterrows()]
 
     df["num_species_ratio_gamma"] = df["num_species_gamma"] / df["num_taxa"]
@@ -242,26 +247,26 @@ familysplit_analysis(dfs["familysplit"])
 
 columns = [
                 "num_taxa",
-               # "num_chars",
-               # "multistate_ratio",
-               # "max_values",
-               # "difficulty",
-               # "AIC_gamma",
-               # "AIC_nogamma",
+                "num_chars",
+                "multistate_ratio",
+                "max_values",
+                "difficulty",
+                "AIC_gamma",
+                "AIC_nogamma",
                  "final_llh_gamma",
                  "final_llh_nogamma",
-               # "swadesh_ratio",
-                "sites_per_char",
-               # "mean_substitution_frequency",
-               # "mean_norm_rf_distance",
-               # "mean_parsimony_support",
-               # "mean_parsimony_bootstrap_support",
-               # "avg_brlen_gamma",
-               # "avg_brlen_nogamma",
-               # "num_species_gamma",
-               # "num_species_nogamma",
-               # "num_species_ratio_gamma",
-               # "num_species_ratio_nogamma",
+                 "swadesh_ratio",
+                 "sites_per_char",
+                 "mean_substitution_frequency",
+                "mean_norm_rf_distance",
+                "mean_parsimony_support",
+                "mean_parsimony_bootstrap_support",
+                "avg_brlen_gamma",
+                "avg_brlen_nogamma",
+                "num_species_gamma",
+                "num_species_nogamma",
+                "num_species_ratio_gamma",
+                "num_species_ratio_nogamma",
                 "zero_base_frequency_gamma",
                 "zero_base_frequency_nogamma"
                 ]

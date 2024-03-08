@@ -2,7 +2,7 @@
 "max_num_chars" : 700,
 "family_split_threshold": 0,
 "num_samples": 0,
-"data_dir" : "data/lingdata/familyfull_partititioning",
+"data_dir" : "data/lingdata/familysplit_partititioning",
 "native_dir" : "data/lingdata",
 "sources" : ["lexibank", "SequenceComparison"],
 "ling_types" : ["cognate"],

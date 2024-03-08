@@ -92,7 +92,6 @@ def evaluate(df):
 
 
 raxmlng.adaptive_exe_path = "./bin/raxml-ng-adaptive"
-mptp.exe_path = "./bin/mptp"
 pythia.raxmlng_path = "./bin/raxml-ng"
 pythia.predictor_path = "predictors/latest.pckl"
 config_path = "lingdata_modeltesting_familyfull_config.json"

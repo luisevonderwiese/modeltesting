@@ -14,7 +14,8 @@ import code.pythia as pythia
 import code.mptp as mptp
 import code.raxmlng as raxmlng
 import code.util as util
-
+import code.distances as distances
+distances.exe_path = "./bin/qdist"
 
 
 def filter_data(df):
@@ -123,6 +124,21 @@ def calculate_relative_likelihoods(df):
         df["rlh_" + name] = relative_likelihoods
     return df
 
+def distances_glottolog(df, experiment):
+    d = []
+    for i, row in df.iterrows():
+        glottolog_tree_path =  row["glottolog_tree_path"]
+        if glottolog_tree_path == glottolog_tree_path and os.path.isfile(glottolog_tree_path):
+            best_tree_path = raxmlng.best_tree_path(util.prefix(results_dir, row, experiment, "bin"))
+            if os.path.isfile(best_tree_path):
+                d.append(distances.gq_distance(best_tree_path, glottolog_tree_path))
+            else:
+                d.append(float("nan"))
+        else:
+            d.append(float("nan"))
+    return d
+
+
 def write_results_df(df):
     df["difficulty"] = get_difficulties(df)
     df["alpha"] = get_alphas(df, "raxmlng_gamma")
@@ -147,9 +163,12 @@ def write_results_df(df):
     df["num_species_nogamma"] = get_num_species(df, "mptp_nogamma")
     df["avg_brlen_gamma"] = average_brlens(df, "raxmlng_gamma")
     df["avg_brlen_nogamma"] = average_brlens(df, "raxmlng_nogamma")
+    df["gq_glottolog_gamma"] = distances_glottolog(df, "raxmlng_gamma")
+    df["gq_glottolog_nogamma"] = distances_glottolog(df, "raxmlng_nogamma")
     print_df = df[["ds_id", "source", "ling_type", "family", "difficulty", "alpha", "zero_base_frequency_gamma", "zero_base_frequency_nogamma",
         "final_llh_gamma", "final_llh_nogamma", "AIC_gamma", "AIC_nogamma", "AICc_gamma", "AICc_nogamma", "BIC_gamma", "BIC_nogamma",
-                    "rlh_AIC", "rlh_AICc", "rlh_BIC", "avg_ml_tree_dist", "num_species_gamma", "num_species_nogamma", "avg_brlen_gamma", "avg_brlen_nogamma"]]
+                    "rlh_AIC", "rlh_AICc", "rlh_BIC", "avg_ml_tree_dist", "num_species_gamma", "num_species_nogamma", "avg_brlen_gamma", "avg_brlen_nogamma",
+                    "gq_glottolog_gamma", "gq_glottolog_nogamma"]]
     print_df.to_csv(os.path.join(results_dir, "raxml_pythia_results.csv"), sep = ";")
 
 raxmlng.exe_path = "./bin/raxml-ng"
@@ -165,14 +184,14 @@ config_paths = {
 #database.download()
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
-    database.compile()
+    #database.compile()
     df = database.data()
     if setup.endswith("filtered"):
         df = filter_data(df)
     results_dir = os.path.join("data/results", setup)
 
-    run_raxml_ng(df, "raxmlng_gamma")
-    run_raxml_ng(df, "raxmlng_nogamma")
-    run_pythia(df)
-    run_mptp(df)
+    #run_raxml_ng(df, "raxmlng_gamma")
+    #run_raxml_ng(df, "raxmlng_nogamma")
+    #run_pythia(df)
+    #run_mptp(df)
     write_results_df(df)

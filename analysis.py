@@ -208,6 +208,23 @@ def add_ebg(df):
     df = pd.merge(df, ebg_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
     return df
 
+def confusion_matrix(df):
+    r = [["BIN", 0, 0], ["BIN+G", 0, 0]]
+    for i, row in df.iterrows():
+        if row["AIC_nogamma"] < row["AIC_gamma"]:
+            if row["alpha"] > 40:
+                r[0][1] += 1
+            else:
+                r[0][2] += 1
+        else:
+            if row["alpha"] > 40:
+                r[1][1] += 1
+            else:
+                r[1][2] += 1
+    headers = ["model with lower AIC score", "alpha > 40", "alpha <= 40"]
+    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = headers))
+
+
 
 
 with open("word_lists/swadesh100.txt") as s100_file:
@@ -268,7 +285,9 @@ columns = [
                 "num_species_ratio_gamma",
                 "num_species_ratio_nogamma",
                 "zero_base_frequency_gamma",
-                "zero_base_frequency_nogamma"
+                "zero_base_frequency_nogamma",
+                "gq_glottolog_gamma",
+                "gq_glottolog_nogamma"
                 ]
 alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
 heterogeneity_analysis(columns, dfs["familyfull"], dfs["familysplit"])
@@ -279,4 +298,5 @@ AIC_analysis(dfs["familysplit"])
 
 filtering_analysis(dfs["familyfull"], dfs["familyfull_filtered"])
 filtering_analysis(dfs["familysplit"], dfs["familysplit_filtered"])
-
+confusion_matrix(dfs["familyfull"])
+print(dfs["familyfull"])

@@ -1,7 +1,6 @@
 import os
 import lingdata.database as database
 from Bio import AlignIO
-from nexus import NexusReader
 from phylogemetric import DeltaScoreMetric
 from phylogemetric import QResidualMetric
 import pandas as pd
@@ -15,12 +14,10 @@ for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
     #database.compile()
     df = database.data()
-    if setup.endswith("filtered"):
-        df = filter_data(df)
+
     results_dir = os.path.join("data/results", setup)
     res_df = pd.DataFrame(columns = ["ds_id", "source", "ling_type", "family", "q", "delta"])
-    deltas = []
-    qs = []
+
     for i, row in df.iterrows():
         res_df.at[i, "ds_id"] = row["ds_id"]
         res_df.at[i, "source"] = row["source"]

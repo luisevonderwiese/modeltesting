@@ -213,6 +213,11 @@ def add_simon_metrics(df):
     df = pd.merge(df, simon_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
     return df
 
+def add_tiger(df):
+    tiger_df = pd.read_csv(os.path.join(results_dir, "tiger.csv"), sep = ";")
+    df = pd.merge(df, tiger_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
+    return df
+
 def confusion_matrix(df):
     r = [["BIN", 0, 0], ["BIN+G", 0, 0]]
     for i, row in df.iterrows():
@@ -296,7 +301,9 @@ columns = [
                 "gq_glottolog_nogamma",
                 "dialect_ratio",
                 "q",
-                "delta"
+                "delta",
+                "tiger",
+                "tiger_corrected"
                 ]
 alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
 heterogeneity_analysis(columns, dfs["familyfull"], dfs["familysplit"])

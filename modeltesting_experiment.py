@@ -184,7 +184,7 @@ config_paths = {
 #database.download()
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
-    #database.compile()
+    database.compile()
     df = database.data()
     if setup.endswith("filtered"):
         df = filter_data(df)

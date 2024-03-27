@@ -4,7 +4,7 @@ from Bio import AlignIO
 from nexus import NexusReader
 from phylogemetric import DeltaScoreMetric
 from phylogemetric import QResidualMetric
-
+import pandas as pd
 
 config_paths = {
                 "familyfull": "lingdata_modeltesting_familyfull_config.json",
@@ -26,10 +26,24 @@ for (setup, config_path) in config_paths.items():
         res_df.at[i, "source"] = row["source"]
         res_df.at[i, "ling_type"] = row["ling_type"]
         res_df.at[i, "family"] = row["family"]
-        alignment = AlignIO.read(row["msa_paths"]["bin"], "phylip-relaxed")
-        with open("temp.nex", "w+") as outfile:
-            AlignIO.write(alignment, outfile, "nexus")
-            matrix = NexusReader("temp.nex").data.matrix
-            res_df.at[i, "q"] = QResidualMetric(matrix)
-            res_df.at[i, "delta"] = DeltaScoreMetric(matrix)
+        try:
+            alignment = AlignIO.read(row["msa_paths"]["bin"], "phylip-relaxed")
+        except:
+            res_df.at[i, "q"] = float("nan")
+            res_df.at[i, "delta"] = float("nan")
+            continue
+
+        matrix =  {}
+        for record in alignment:
+            matrix[record.id] = record.seq
+        try:
+            q_values = QResidualMetric(matrix).score(workers=4)
+            res_df.at[i, "q"] = sum(q_values.values()) / len(q_values)
+        except:
+            res_df.at[i, "q"] = float('nan')
+        try:
+            delta_scores = DeltaScoreMetric(matrix).score(workers=4)
+            res_df.at[i, "delta"] = sum(delta_scores.values()) /  len(delta_scores)
+        except:
+            res_df.at[i, "delta"] = float('nan')
     res_df.to_csv(os.path.join(results_dir, "simon_metrics.csv"), sep = ";")

@@ -211,6 +211,7 @@ def add_ebg(df):
 def add_simon_metrics(df):
     simon_df = pd.read_csv(os.path.join(results_dir, "simon_metrics.csv"), sep = ";")
     df = pd.merge(df, simon_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
+    return df
 
 def confusion_matrix(df):
     r = [["BIN", 0, 0], ["BIN+G", 0, 0]]

@@ -263,6 +263,7 @@ for (setup, config_path) in config_paths.items():
     if not setup.endswith("_filtered"):
         df = add_ebg(df)
         df = add_simon_metrics(df)
+        df = add_tiger(df)
     df["swadesh_ratio"] = [get_swadesh_ratio(row["categorical_path"], swadesh100, swadesh207) for i, row in df.iterrows()]
 
     df["num_species_ratio_gamma"] = df["num_species_gamma"] / df["num_taxa"]

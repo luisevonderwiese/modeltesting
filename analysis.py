@@ -218,6 +218,11 @@ def add_tiger(df):
     df = pd.merge(df, tiger_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
     return df
 
+def add_ent(df):
+    ent_df = pd.read_csv(os.path.join(results_dir, "ent.csv"), sep = ";")
+    df = pd.merge(df, ent_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
+    return df
+
 def confusion_matrix(df):
     r = [["BIN", 0, 0], ["BIN+G", 0, 0]]
     for i, row in df.iterrows():
@@ -264,6 +269,7 @@ for (setup, config_path) in config_paths.items():
         df = add_ebg(df)
         df = add_simon_metrics(df)
         df = add_tiger(df)
+        df = add_ent(df)
     df["swadesh_ratio"] = [get_swadesh_ratio(row["categorical_path"], swadesh100, swadesh207) for i, row in df.iterrows()]
 
     df["num_species_ratio_gamma"] = df["num_species_gamma"] / df["num_taxa"]
@@ -304,7 +310,10 @@ columns = [
                 "q",
                 "delta",
                 "tiger",
-                "tiger_corrected"
+                "tiger_corrected",
+                "entropy",
+                "chi_percentage",
+                "scc"
                 ]
 alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
 heterogeneity_analysis(columns, dfs["familyfull"], dfs["familysplit"])

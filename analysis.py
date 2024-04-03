@@ -258,6 +258,7 @@ config_paths = {
         }
 
 dfs = {}
+pd.set_option('display.max_rows', 500)
 for (setup, config_path) in config_paths.items():
     database.read_config(config_path)
     df = database.data()
@@ -270,6 +271,7 @@ for (setup, config_path) in config_paths.items():
         df = add_simon_metrics(df)
         df = add_tiger(df)
         df = add_ent(df)
+        print(df["scc_vertical"])
     df["swadesh_ratio"] = [get_swadesh_ratio(row["categorical_path"], swadesh100, swadesh207) for i, row in df.iterrows()]
 
     df["num_species_ratio_gamma"] = df["num_species_gamma"] / df["num_taxa"]
@@ -313,7 +315,10 @@ columns = [
                 "tiger_corrected",
                 "entropy",
                 "chi_percentage",
-                "scc"
+                "scc",
+                "entropy_vertical",
+                "chi_percentage_vertical",
+                "scc_vertical"
                 ]
 alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
 heterogeneity_analysis(columns, dfs["familyfull"], dfs["familysplit"])

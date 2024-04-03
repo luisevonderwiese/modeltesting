@@ -26,9 +26,12 @@ for (setup, config_path) in config_paths.items():
     df = database.data()
 
     results_dir = os.path.join("data/results", setup)
-    res_df = pd.DataFrame(columns = ["ds_id", "source", "ling_type", "family", "entropy", "chi_percentage", "scc"])
+    res_df = pd.DataFrame(columns = ["ds_id", "source", "ling_type", "family", \
+            "entropy", "chi_distribution", "chi_percentage", "scc", \
+            "entropy_vertical", "chi_distribution_vertical", "chi_percentage_vertical", "scc_vertical"])
 
     for i, row in df.iterrows():
+        print(row["ds_id"])
         res_df.at[i, "ds_id"] = row["ds_id"]
         res_df.at[i, "source"] = row["source"]
         res_df.at[i, "ling_type"] = row["ling_type"]
@@ -38,23 +41,95 @@ for (setup, config_path) in config_paths.items():
         except:
             res_df.at[i, "entropy"] = float("nan")
             res_df.at[i, "chi_percentage"] = float("nan")
+            res_df.at[i, "chi_distribution"] = float("nan")
             res_df.at[i, "scc"] = float("nan")
+            res_df.at[i, "entropy_vertical"] = float("nan")
+            res_df.at[i, "chi_percentage_vertical"] = float("nan")
+            res_df.at[i, "chi_distribution_vertical"] = float("nan")
+            res_df.at[i, "scc_vertical"] = float("nan")
+
+            print("xxxxxxxxxxxxxxxxxxx")
             continue
+        entropies = []
+        chi_distributions = []
+        chi_percentages = []
+        sccs = []
         for record in alignment:
             with open("temp.txt", "w+") as tempfile:
                 tempfile.write(str(record.seq))
-            #print(open("temp.txt", "r").readlines())
-            os.system("./ent temp.txt > out.txt")
+            os.system("./bin/ent temp.txt > out.txt")
             with open("out.txt", "r") as outfile:
                 for line in outfile.readlines():
                     if line.startswith("Entropy"):
-                        entropies.append(float(line.split(" = ")[1].split(" ")[0]))
+                        try:
+                            e = float(line.split(" = ")[1].split(" ")[0])
+                            entropies.append(e)
+                        except:
+                            print("Entropy undefined")
+                    if line.startswith("Chi"):
+                        try:
+                            c_d = float(line.split(",")[0].split(" ")[-1])
+                            chi_distributions.append(c_d)
+                        except:
+                            print("Chi distribution undefined")
                     if line.startswith("would"):
-                        chi_percentages.append(float(line.split(" percent ")[0].split(" ")[-1]))
+                        try:
+                            c_p = float(line.split(" percent ")[0].split(" ")[-1])
+                            chi_percentages.append(c_p)
+                        except:
+                            print(line)
+                            print("Chi percentage undefined")
                     if line.startswith("Serial correlation coefficient"):
-                        sccs.append(float(line.split(" is ")[1].split(" ")[0]))
+                        try: 
+                            scc = abs(float(line.split(" is ")[1].split(" ")[0]))
+                            sccs.append(scc)
+                        except:
+                            sccs.append(1.0)
         res_df.at[i, "entropy"] = sum(entropies) / len(entropies)
         res_df.at[i, "chi_percentage"] = sum(chi_percentages) / len(chi_percentages)
-        res_df.at[i, "scc"] = sum(sccs) / len(scc)
+        res_df.at[i, "chi_distribution"] = sum(chi_distributions) / len(chi_distributions)
+        res_df.at[i, "scc"] = sum(sccs) / len(sccs)
+
+        entropies = []
+        chi_distributions = []
+        chi_percentages = []
+        sccs = []
+
+        for k  in range(alignment.get_alignment_length()):
+            site = alignment[:, k]
+            with open("temp.txt", "w+") as tempfile:
+                tempfile.write(str(site))
+            os.system("./bin/ent temp.txt > out.txt")
+            with open("out.txt", "r") as outfile:
+                for line in outfile.readlines():
+                    if line.startswith("Entropy"):
+                        try:
+                            e = float(line.split(" = ")[1].split(" ")[0])
+                            entropies.append(e)
+                        except:
+                            print("Entropy undefined")
+                    if line.startswith("Chi"):
+                        try:
+                            c_d = float(line.split(",")[0].split(" ")[-1])
+                            chi_distributions.append(c_d)
+                        except:
+                            print("Chi distribution undefined")
+                    if line.startswith("would"):
+                        try:
+                            c_p = float(line.split(" percent ")[0].split(" ")[-1])
+                            chi_percentages.append(c_p)
+                        except:
+                            print("Chi percentage undefined")
+                    if line.startswith("Serial correlation coefficient"):
+                        try:
+                            scc = abs(float(line.split(" is ")[1].split(" ")[0]))
+                            sccs.append(scc)
+                        except:
+                            sccs.append(1.0)
+        res_df.at[i, "entropy_vertical"] = sum(entropies) / len(entropies)
+        res_df.at[i, "chi_percentage_vertical"] = sum(chi_percentages) / len(chi_percentages)
+        res_df.at[i, "chi_distribution_vertical"] = sum(chi_distributions) / len(chi_distributions)
+        res_df.at[i, "scc_vertical"] = sum(sccs) / len(sccs)
+
 
     res_df.to_csv(os.path.join(results_dir, "ent.csv"), sep = ";")

@@ -12,7 +12,6 @@ from lingdata.categorical import CategoricalData
 from lingdata import database
 
 
-
 def get_swadesh_ratio(categorical_path, swadesh100, swadesh207):
     raw_char_ids = CategoricalData.from_file(categorical_path).char_ids
     char_ids = set([re.sub('[^a-zA-Z]', '', c).lower() for c in raw_char_ids])
@@ -155,32 +154,55 @@ def familyfull_analysis(df):
     print(Counter(num_families_high))
 
 
-def alpha_correlation(columns, familyfull_df, familysplit_df):
+def alpha_correlation(columns, familyfull_df):
     r = []
     for column in columns:
         part_r = [column]
-        for df in [familyfull_df, familysplit_df]:
-            mini_df = df[["alpha", column]]
-            mini_df = mini_df.dropna()
-            pearson = stats.pearsonr(mini_df['alpha'], mini_df[column])
-            part_r.append(pearson[0])
-            part_r.append(pearson[1])
+        mini_df = familyfull_df[["alpha", column]]
+        mini_df = mini_df.dropna()
+        pearson = stats.pearsonr(mini_df['alpha'], mini_df[column])
+        part_r.append(pearson[0])
+        part_r.append(pearson[1])
+        kendalltau = stats.kendalltau(mini_df['alpha'], mini_df[column])
+        part_r.append(kendalltau[0])
+        part_r.append(kendalltau[1])
         r.append(part_r)
-    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "pearson full", "p-value full", "pearson split", "p-value split"]))
+    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "pearson", "p-value", "kendalltau", "p-value"]))
 
-def heterogeneity_analysis(columns, familyfull_df, familysplit_df):
+
+def plot_alpha_correlation(columns, familyfull_df):
+    plots_dir = "data/results/familyfull/hist_plots/"
+    if not os.path.isdir(plots_dir):
+        os.makedirs(plots_dir)
+    for column in columns:
+        mini_df = familyfull_df[["alpha", column]]
+        mini_df = mini_df.dropna()
+        if column == "q":
+            mini_df = mini_df[mini_df[column] <= 0.2]
+        n, bins, patches = plt.hist(mini_df[column])
+        plt.clf()
+        n, bins, patches = plt.hist(mini_df[column], bins = int(len(bins) * 1.5)) 
+        plt.clf()
+        plt.hist(mini_df[mini_df['alpha'] < 40][column], label = "high het.", alpha = 0.6, bins = bins)
+        plt.hist(mini_df[mini_df['alpha'] >= 40][column], label = "low het.", alpha = 0.6, bins = bins)
+        plt.xlabel(column)
+        plt.legend()
+        file_name = os.path.join(plots_dir, "hist_" + column + ".png")
+        plt.savefig(file_name)
+        plt.clf()
+        plt.close()
+
+
+def heterogeneity_analysis(columns, familyfull_df):
     full_het = (familyfull_df[familyfull_df["alpha"] < 40], familyfull_df[familyfull_df["alpha"] >= 40])
-    split_het = (familysplit_df[familysplit_df["alpha"] < 40], familysplit_df[familysplit_df["alpha"] >= 40])
     r = []
     for column in columns:
         part_r = [column]
-        for het in (full_het, split_het):
-            part_r.append(het[0][column].mean())
-            part_r.append(het[1][column].mean())
+        part_r.append(full_het[0][column].mean())
+        part_r.append(full_het[1][column].mean())
         r.append(part_r)
     print("means")
-    part_r.append(het[0][column].mean())
-    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "full high het.", "full low het.", "split high het.", "split low het."]))
+    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "high het.", "low het."]))
 
 
 def filtering_analysis(normal_df, filtered_df):
@@ -271,7 +293,6 @@ for (setup, config_path) in config_paths.items():
         df = add_simon_metrics(df)
         df = add_tiger(df)
         df = add_ent(df)
-        print(df["scc_vertical"])
     df["swadesh_ratio"] = [get_swadesh_ratio(row["categorical_path"], swadesh100, swadesh207) for i, row in df.iterrows()]
 
     df["num_species_ratio_gamma"] = df["num_species_gamma"] / df["num_taxa"]
@@ -320,8 +341,10 @@ columns = [
                 "chi_percentage_vertical",
                 "scc_vertical"
                 ]
-alpha_correlation(columns, dfs["familyfull"], dfs["familysplit"])
-heterogeneity_analysis(columns, dfs["familyfull"], dfs["familysplit"])
+alpha_correlation(columns, dfs["familyfull"])
+heterogeneity_analysis(columns, dfs["familyfull"])
+
+plot_alpha_correlation(columns, dfs["familyfull"])
 print("full:")
 AIC_analysis(dfs["familyfull"])
 print("split:")
@@ -330,4 +353,5 @@ AIC_analysis(dfs["familysplit"])
 filtering_analysis(dfs["familyfull"], dfs["familyfull_filtered"])
 filtering_analysis(dfs["familysplit"], dfs["familysplit_filtered"])
 confusion_matrix(dfs["familyfull"])
-print(dfs["familyfull"])
+
+

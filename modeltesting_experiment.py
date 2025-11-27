@@ -192,6 +192,6 @@ for (setup, config_path) in config_paths.items():
 
     #run_raxml_ng(df, "raxmlng_gamma")
     #run_raxml_ng(df, "raxmlng_nogamma")
-    #run_pythia(df)
+    run_pythia(df)
     #run_mptp(df)
     write_results_df(df)

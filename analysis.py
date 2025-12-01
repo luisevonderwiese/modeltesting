@@ -167,7 +167,8 @@ def alpha_correlation(columns, familyfull_df):
         part_r.append(kendalltau[0])
         part_r.append(kendalltau[1])
         r.append(part_r)
-    print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "pearson", "p-value", "kendalltau", "p-value"]))
+   # print(tabulate(r, tablefmt="pipe", floatfmt=".3f", headers = ["column", "pearson", "p-value", "kendalltau", "p-value"]))
+    print(tabulate(r, tablefmt="pipe", headers = ["column", "pearson", "p-value", "kendalltau", "p-value"]))
 
 
 def plot_alpha_correlation(columns, familyfull_df):
@@ -232,6 +233,8 @@ def add_ebg(df):
 
 def add_simon_metrics(df):
     simon_df = pd.read_csv(os.path.join(results_dir, "simon_metrics.csv"), sep = ";")
+    simon_df = simon_df.drop("Unnamed: 0", axis = 1)
+    df = df.drop("Unnamed: 0_x", axis = 1) 
     df = pd.merge(df, simon_df, how = 'left', left_on=["ds_id", "source", "ling_type", "family"], right_on = ["ds_id", "source", "ling_type", "family"])
     return df
 
@@ -302,6 +305,15 @@ for (setup, config_path) in config_paths.items():
 
 familyfull_analysis(dfs["familyfull"])
 familysplit_analysis(dfs["familysplit"])
+
+plt.hist(dfs["familyfull"]["alpha"], bins = 20)
+plt.xlabel("alpha")
+plt.ylabel("number of datasets")
+file_name = "data/results/familyfull/hist_plots/alpha_hist.png"
+plt.savefig(file_name)
+plt.clf()
+plt.close()
+
 
 columns = [
                 "num_taxa",
